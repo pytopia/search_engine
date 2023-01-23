@@ -1,8 +1,9 @@
+from collections import Counter
 from pathlib import Path
-from src.utils import print_success
 
 from src.nlp.text_process import (ConvertCase, RemoveDigit, RemovePunkt,
                                   RemoveSpace, TextPipeline)
+from src.utils import print_success
 
 
 class Search:
@@ -87,7 +88,7 @@ class Search:
 
         return index
 
-    def search(self, query: str) -> list:
+    def search(self, query: str, top_k: int = 5) -> list:
         """
         Search query in documents.
 
@@ -100,7 +101,10 @@ class Search:
         for token in search_tokens:
             docs.extend(self.index.get(token, []))
 
-        return docs
+        # Count number of documents
+        docs = Counter(docs).most_common(top_k)
+        docs = [doc[0] for doc in docs]
+        return docs[:top_k]
 
 
 if __name__ == '__main__':
@@ -112,6 +116,6 @@ if __name__ == '__main__':
         if query.lower() == 'q':
             break
 
-        docs = searcher.search(query)
+        docs = searcher.search(query, top_k=5)
         for doc_name in docs:
             print_success(f'- {doc_name}')
